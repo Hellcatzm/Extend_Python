@@ -46,3 +46,13 @@ double avg(double *a, int n) {
 double distance(Point *p1, Point *p2) {
     return hypot(p1->x - p2->x, p1->y - p2->y);
 }
+
+/* n:longth of array */
+void clip(double *a, int n, double min, double max, double *out) {
+  double x;
+  for (; n >= 0; n--, a++, out++) {
+    x = *a;
+
+    *out = x > max ? max : (x < min ? min : x);
+  }
+}

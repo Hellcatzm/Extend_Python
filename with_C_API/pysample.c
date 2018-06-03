@@ -135,6 +135,30 @@ static PyObject *py_distance(PyObject *self, PyObject *args) {
   return Py_BuildValue("d", result);
 }
 
+// void clip(double *a, int n, double min, double max, double *out);
+static PyObject *py_clip(PyObject *self, PyObject *args){
+  PyObject *a, *out;
+  int min, max;
+  if(!PyArg_ParseTuple(args, "OiiO", &a, &min, &max, &out)){
+    return NULL;
+  }
+
+  // printf("%i, %i\n", min, max);
+  Py_buffer view_a, view_out;
+  if (PyObject_GetBuffer(a, &view_a,
+      PyBUF_ANY_CONTIGUOUS | PyBUF_FORMAT) == -1) {
+    return NULL;
+  }
+  if (PyObject_GetBuffer(out, &view_out,
+      PyBUF_ANY_CONTIGUOUS | PyBUF_FORMAT) == -1) {
+    return NULL;
+  }
+  clip(view_a.buf, view_a.shape[0], min, max, view_out.buf);
+  PyBuffer_Release(&view_a);
+  PyBuffer_Release(&view_out);
+  return Py_BuildValue("");
+}
+
 #include "Python.h"
 
 /* Execute func(x,y) in the Python interpreter.  The
@@ -222,6 +246,7 @@ static PyMethodDef SampleMethods[] = {
   {"avg", py_avg, METH_VARARGS, "Average values in an array"},
   {"Point", py_Point, METH_VARARGS},
   {"distance", py_distance, METH_VARARGS, "Function involving a C data structure"},
+  {"clip", py_clip, METH_VARARGS, "clip array"},
   {"call_func", py_call_func, METH_VARARGS, "Extension function for testing the C-Python callback"},
   { NULL, NULL, 0, NULL}
 };
